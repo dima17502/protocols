@@ -4,7 +4,7 @@ import random
 
 
 def gen_hashes(in_file, encoding, hash_func, count, out_file):
-
+    """Вычисляет хеши из входного файла, записывает в выходной"""
     maintained_encodings = ["UTF-8", "UTF-16"]
         
     maintained_h_funcs = {
@@ -52,7 +52,7 @@ def gen_hashes(in_file, encoding, hash_func, count, out_file):
         with open(out_file, 'w', encoding='utf-8') as f:
             f.write('\n'.join(hashes))
     except Exception as err:
-        print(f"Error occured while writing to output file: {MemoryError}")
+        print(f"Error occured while writing to output file: {err}")
 
 
 if __name__ == "__main__":
