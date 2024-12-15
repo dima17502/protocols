@@ -25,7 +25,7 @@ def split_list(data, num_chunks):
 
 def crack_passwords(wordlist_file, encoding, hash_func, hashlist_file):
     maintained_encodings = ["UTF-8", "UTF-16"]
-    maintained_h_funcs = ['MD4','MD5','SHA-1','SHA-256','SHA-512']
+    maintained_h_funcs = ['md4','md5','sha1','sha256','sha512']
     # Загрузка словаря паролей
     try:
         with open(wordlist_file, 'r', encoding=encoding) as f:
@@ -45,7 +45,7 @@ def crack_passwords(wordlist_file, encoding, hash_func, hashlist_file):
         return
     if hash_func not in maintained_h_funcs:
         print(f"Unsupported hash function: {hash_func}")
-        print(f"Available hash functions are: md4, md5, sha-1, sha-256, sha-512")
+        print(f"Available hash functions are: md4, md5, sha1, sha256, sha512")
         return
     # Печать хешей для проверки
     #print("Loaded hashes:")
