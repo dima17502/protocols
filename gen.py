@@ -42,7 +42,7 @@ def gen_hashes(in_file, encoding, hash_func, count, out_file):
         hash_value = hash_func(password.encode(encoding)).hexdigest()   # вычисляем хеш для каждого пароля
         hashes.append(hash_value)
 
-    while len(hashes) < count:
+    while len(hashes) < count:                  # дополняем файл случайными хешами
         length = random.randint(1, 10) 
         random_password = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=length))
         random_hash = hash_func(random_password.encode(encoding)).hexdigest()
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         print("Usage: python gen.py <input_file> <encoding> <hash_function> <count> <output_file>")
         sys.exit(1)
 
-    in_file = sys.argv[1]
+    in_file = sys.argv[1]       # считываем переданные аргументы
     encoding = sys.argv[2]
     hash_func = sys.argv[3]
     count = int(sys.argv[4])
