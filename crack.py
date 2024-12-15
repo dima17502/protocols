@@ -1,54 +1,65 @@
-import hashlib
 import sys
-from multiprocessing import Pool, cpu_count
 import time
+import hashlib
+from multiprocessing import Pool, cpu_count
+
 
 def compute_hash(password, encoding, hash_function):
-    """Вычисляет хеш для заданного пароля."""
-    hash_func = getattr(hashlib, hash_function.lower())  # Приводим к нижнему регистру
+    hash_func = getattr(hashlib, hash_function.lower())    
+
     return hash_func(password.encode(encoding)).hexdigest()
 
-def process_chunk(chunk, hash_list, encoding, hash_function):
-    """Обрабатывает часть данных, возвращает совпадения."""
+def process_part(chunk, hash_list, encoding, hash_function):
     matches = []
-    #print(hash_list)
+
     for password in chunk:
-        password = password.strip()  # Убираем лишние пробелы и символы новой строки
+        password = password.strip()  # убираем пробельные символы по краям
         hash_value = compute_hash(password, encoding, hash_function)
-        #print(hash_value)
-        # Приводим хеши к нижнему регистру и убираем лишние пробелы
         if any(hash_value.strip().lower() == h.strip().lower() for h in hash_list):
             matches.append(f"{password}:{hash_value}")
     return matches
 
 def split_list(data, num_chunks):
-    """Разделяет данные на равные части."""
     avg = len(data) // num_chunks
     return [data[i * avg:(i + 1) * avg] for i in range(num_chunks)]
 
-def crack_passwords(wordlist_file, encoding, hash_function, hashlist_file):
-    """Основная функция для восстановления паролей."""
+def crack_passwords(wordlist_file, encoding, hash_func, hashlist_file):
+    maintained_encodings = ["UTF-8", "UTF-16"]
+    maintained_h_funcs = ['MD4','MD5','SHA-1','SHA-256','SHA-512']
     # Загрузка словаря паролей
-    with open(wordlist_file, 'r', encoding=encoding) as f:
-        passwords = f.readlines()
+    try:
+        with open(wordlist_file, 'r', encoding=encoding) as f:
+            passwords = f.readlines()
+    except Exception as err:
+        print(f"Error occured while reading file with passwords: {err}")
 
     # Загрузка хешей
-    with open(hashlist_file, 'r', encoding='utf-8') as f:
-        hash_list = set(f.read().splitlines())
+    try:
+        with open(hashlist_file, 'r', encoding='utf-8') as f:
+            hash_list = set(f.read().splitlines())
+    except Exception as err:
+        print(f"Error occured while reading file with hashes: {err}")
 
+    if encoding not in maintained_encodings:
+        print(f"Unsupported encoding:{encoding}")
+        return
+    if hash_func not in maintained_h_funcs:
+        print(f"Unsupported hash function: {hash_func}")
+        print(f"Available hash functions are: md4, md5, sha-1, sha-256, sha-512")
+        return
     # Печать хешей для проверки
     #print("Loaded hashes:")
     #for h in hash_list:
     #   print(h)
 
-    # Распараллеливание по ядрам
+    # Распараллеливание вычислений
     num_cores = cpu_count()
-    chunks = split_list(passwords, num_cores)
+    parts = split_list(passwords, num_cores)
 
     start_time = time.time()
 
     with Pool(processes=num_cores) as pool:
-        results = pool.starmap(process_chunk, [(chunk, hash_list, encoding, hash_function) for chunk in chunks])
+        results = pool.starmap(process_part, [(part, hash_list, encoding, hash_func) for part in parts])
 
     end_time = time.time()
 
